@@ -1,0 +1,81 @@
+# docker-compose.yml — bring up the snxsc_l3 telnet container.
+#
+# Quickstart:
+#   1. Place snxsc_l3.tar.gz next to this file (the Dockerfile reads it
+#      from the build context).
+#   2. docker compose build
+#   3. docker compose up -d
+#   4. telnet <docker-host>
+#
+# Device passthrough strategy: each /dev/sgil1_* node is listed
+# explicitly as a `devices:` entry. No bind mount of /dev, no
+# cgroup-class grant — the container only sees the 41 sgil1 nodes it
+# actually needs. (run.sh generates the same set programmatically with
+# a shell loop, including only nodes that exist; the YAML version below
+# enumerates the full range, and Docker will simply fail to start if
+# any are missing on the host. If that's a problem, use run.sh.)
+
+services:
+  l2:
+    build: .
+    image: snxsc-l3:latest
+    container_name: l2
+    restart: always
+
+    devices:
+      - /dev/sgil1_cs
+      - /dev/sgil1_0
+      - /dev/sgil1_1
+      - /dev/sgil1_2
+      - /dev/sgil1_3
+      - /dev/sgil1_4
+      - /dev/sgil1_5
+      - /dev/sgil1_6
+      - /dev/sgil1_7
+      - /dev/sgil1_8
+      - /dev/sgil1_9
+      - /dev/sgil1_10
+      - /dev/sgil1_11
+      - /dev/sgil1_12
+      - /dev/sgil1_13
+      - /dev/sgil1_14
+      - /dev/sgil1_15
+      - /dev/sgil1_16
+      - /dev/sgil1_17
+      - /dev/sgil1_18
+      - /dev/sgil1_19
+      - /dev/sgil1_20
+      - /dev/sgil1_21
+      - /dev/sgil1_22
+      - /dev/sgil1_23
+      - /dev/sgil1_24
+      - /dev/sgil1_25
+      - /dev/sgil1_26
+      - /dev/sgil1_27
+      - /dev/sgil1_28
+      - /dev/sgil1_29
+      - /dev/sgil1_30
+      - /dev/sgil1_31
+      - /dev/sgil1_32
+      - /dev/sgil1_33
+      - /dev/sgil1_34
+      - /dev/sgil1_35
+      - /dev/sgil1_36
+      - /dev/sgil1_37
+      - /dev/sgil1_38
+      - /dev/sgil1_39
+
+    volumes:
+      # Persist the l2 user's NVRAM and other state across container
+      # recreations. Comment out for ephemeral state.
+      - l2-state:/home/l2
+
+    # Telnet, plus the two SMP ports the l2 daemon listens on at startup.
+    ports:
+      - "23:23"
+      - "8001:8001"
+      - "8003:8003"
+      - "9002:9002"
+
+volumes:
+  l2-state:

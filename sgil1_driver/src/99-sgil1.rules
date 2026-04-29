@@ -1,0 +1,15 @@
+# udev rules for the SGI L1 USB driver (sgil1)
+#
+# The kernel module registers per-device char nodes named "sgil1_N"
+# (created automatically by udev under /dev/) and one misc char node
+# named "sgil1_cs" (also under /dev/).
+#
+# These rules just set sensible default permissions to match the
+# original 2.6 initscript:
+#   /dev/sgil1_N   - 0666 (read/write for everyone)
+#   /dev/sgil1_cs  - 0444 (read-only for everyone)
+#
+# If you want to restrict access, change these MODE/OWNER/GROUP fields.
+
+KERNEL=="sgil1_[0-9]*",  MODE="0666"
+KERNEL=="sgil1_cs",      MODE="0444"

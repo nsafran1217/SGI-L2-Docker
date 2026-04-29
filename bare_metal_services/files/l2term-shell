@@ -1,0 +1,16 @@
+#!/bin/sh
+# /usr/local/bin/l2term — login-shell wrapper for the `l2` user.
+#
+# The /opt/snxsc_l3/bin/l2term binary is a 32-bit ELF terminal
+# program, not a shell. When sshd or login execs the user's shell
+# they may prefix argv[0] with `-` (login-shell convention) or pass
+# `-c "command"` for non-interactive sessions. The real l2term uses
+# getopt() and would error out on `-c`. So this wrapper is the
+# user's "shell" in /etc/passwd; it ignores all incoming arguments
+# and just execs the real binary, giving the user a kiosk-style
+# session that always lands in the L2 console.
+#
+# Listed in /etc/shells by setup-services.sh so /bin/login (and
+# therefore telnet) accepts it.
+
+exec /opt/snxsc_l3/bin/l2term

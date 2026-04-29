@@ -1,0 +1,58 @@
+# /etc/systemd/system/l2.service
+#
+# Runs the SGI L2 system-controller daemon (`l2`, no args) as user `l2`.
+#
+# Restart policy is `always` — keep the daemon up no matter how it
+# exits. In practice l2 exits non-zero (status 2) even on what's
+# effectively a normal session end (e.g. after a network client
+# disconnects), so on-success / on-failure split policies don't fit.
+# Manual `systemctl stop` still does NOT trigger restart (systemd
+# treats deliberate stops separately from the unit's own exit
+# conditions, regardless of Restart= value).
+#
+# Runs as `l2`, not root. The udev rules from the driver make
+# /dev/sgil1_* world-rw and /dev/sgil1_cs world-readable, so root is
+# not needed for USB I/O. The daemon's UNIX socket lives in /usr/tmp/
+# (symlinked to /tmp by setup-services.sh) and l2term connects to it
+# as the same user.
+
+[Unit]
+Description=SGI L2 system-controller daemon (snxsc_l3)
+Documentation=man:l2term(1)
+# Wait for the kernel module to be loaded by systemd-modules-load before
+# trying to open /dev/sgil1_cs.
+After=systemd-modules-load.service local-fs.target
+Wants=systemd-modules-load.service
+
+[Service]
+Type=simple
+User=l2
+Group=l2
+# l2 writes state files (e.g. .l2_NVRAM) into its current working
+# directory, so put it somewhere the `l2` user can write. /home/l2 is
+# already created by setup-services.sh and already owned by the l2 user.
+WorkingDirectory=/home/l2
+# Indirect through l2-launch instead of running l2 directly. The
+# launcher hands l2 a fifo-backed stdin so the daemon's select() loop
+# doesn't spin at 100% CPU on EOFs from /dev/null. See the comments
+# in /usr/local/sbin/l2-launch for the full story.
+ExecStart=/usr/local/sbin/l2-launch
+Restart=always
+RestartSec=2
+
+# Type=simple assumes l2 stays in the foreground. If it turns out to
+# self-daemonize (fork into the background), switch this unit to
+# Type=forking and add a PIDFile= — symptom would be l2.service
+# flapping between active/activating right after start.
+
+# Light hardening only. Don't enable PrivateTmp (l2 + l2term need to
+# share /tmp via the /usr/tmp symlink), don't enable ProtectHome or
+# ProtectSystem (this is a 17-year-old binary; let's not surprise it).
+NoNewPrivileges=yes
+
+# Keep stdout/stderr in the journal so `journalctl -u l2` shows them.
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,33 @@
+#!/bin/sh
+# /usr/local/sbin/l2-launch — workaround for l2 spinning under systemd.
+#
+# The problem: l2's main loop does roughly
+#     select(maxfd+1, &rfds_with_stdin, ...);
+#     if (FD_ISSET(0, &rfds)) { read(0, buf, sizeof buf); /* ignore EOF */ }
+# Under a shell, stdin is a TTY: select only returns when the user
+# types something, the loop blocks correctly, CPU stays low.
+# Under systemd (StandardInput=null, the default for daemons), stdin
+# is /dev/null: every select() reports stdin readable, every read()
+# returns 0 (EOF), the loop iterates flat-out — 100% CPU.
+#
+# The fix is to give l2 a stdin that blocks on read instead of EOFing.
+# A fifo with at least one writer and no data does exactly that:
+#
+#   1. mkfifo at a unique path.
+#   2. Open it on fd 3 in read+write mode (O_RDWR doesn't block on
+#      open regardless of how many readers/writers are on the other
+#      side, and gives us a single fd that counts as both).
+#   3. Unlink the path immediately — fd 3 keeps the inode alive.
+#   4. exec l2 with fd 0 dup'd from fd 3, then close fd 3. Result:
+#      l2 has stdin = an R+W handle on a never-fed fifo. Reads block;
+#      select doesn't fire on stdin; CPU goes back to idle.
+#
+# No background helper process, no orphans, no cgroup-cleanup race.
+
+set -e
+
+FIFO=$(mktemp -u -t l2-stdin.XXXXXX)
+mkfifo -m 0600 "$FIFO"
+exec 3<>"$FIFO"
+rm -f "$FIFO"
+exec /opt/snxsc_l3/bin/l2 0<&3 3<&-

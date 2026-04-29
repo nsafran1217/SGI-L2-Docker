@@ -1,0 +1,21 @@
+#!/bin/sh
+# /usr/local/sbin/l2-autologin — auto-login helper for telnetd.
+#
+# Wired in via in.telnetd's `-E <program>` flag, which causes the
+# telnet daemon to exec this script instead of /bin/login. We then
+# `login -f l2` — the `-f` flag tells /bin/login the user is
+# preauthenticated, so it skips the password prompt but still sets
+# up the PAM session, writes utmp/wtmp, and execs the user's shell
+# (the /usr/local/bin/l2term wrapper, which exec's the real l2term
+# binary, which connects to the l2 daemon's UNIX socket).
+#
+# `login -f` is privileged: it only honors -f when invoked by root.
+# Inetd runs telnetd as root, telnetd execs us, so we run as root —
+# that condition is satisfied.
+#
+# SECURITY: anyone able to open TCP/23 to this host gets a console
+# session as the `l2` user with no credentials whatsoever. Only
+# deploy on a trusted segment. SSH access (which goes through its
+# own auth chain) is unaffected and still requires a password.
+
+exec /bin/login -f l2
