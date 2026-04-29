@@ -4,7 +4,7 @@
 Contained in this repo is a solution for setting up SGI's L3 emulator software on a modern linux distribution (Debian 13) or in a docker container.  
 AI was used to help make this.
 
-There are 3 packages in the repo. Which one you use depends on how you are deploying it.
+There are 3 directories in the repo. Which ones you use depends on how you are deploying it.
 
 
 ## Usage
@@ -16,6 +16,8 @@ You are automatically logged in as "l2" and running the `l2term` program.
 To logout, press `CTRL-]`, then `q`.
 
 You can connect with `l2gui`, `l2cmd`, or `l2term` from a different computer by passing the `--l2` parameter with the IP address of the l2 server.
+
+If you installed the bare metal services version, you can also ssh to `l2@host` rather than using telnet.
 
 
 ## Deployment Scenarios
@@ -37,6 +39,8 @@ At least for an Altix 350, the Vendor/Device is `065e:1234`
 
 ### Docker on VM or Bare Metal
 You will use the `sgil1_driver` and `docker` directories.
+
+See [Docker readme](https://github.com/nsafran1217/SGI-L2-Docker/blob/main/docker/README.md) for more information. This includes information about troubleshooting, and service management.
 
 Clone repo: 
 ```
@@ -63,6 +67,7 @@ docker compose up -d
 You will use the `sgil1_driver` and `bare_metal_services` directories.  
 *the service setup script has only been tested on Debian 13. It will not work on non-debian based distros*
 
+See [bare metal readme](https://github.com/nsafran1217/SGI-L2-Docker/blob/main/bare_metal_services/README.md) for more information.
 
 Clone repo: 
 ```
