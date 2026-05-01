@@ -181,6 +181,9 @@ if passwd --status "$L2_USER" 2>/dev/null | awk '{print $2}' | grep -qE '^(L|NP)
 else
     log "User '$L2_USER' already has a password set; leaving it unchanged."
 fi
+# quiet the login
+touch /home/$L2_USER/.hushlogin
+chown $L2_USER:$L2_USER /home/$L2_USER/.hushlogin
 
 # ----------------------------------------------------------------------
 # l2.service (with the l2-launch stdin-fifo wrapper it ExecStart=s)
@@ -211,6 +214,7 @@ log "Enabling telnet entry in /etc/inetd.conf …"
 update-inetd --enable telnet 2>/dev/null || true
 if [[ -f /etc/inetd.conf ]]; then
     sed -i -E 's/^[[:space:]]+(telnet[[:space:]])/\1/' /etc/inetd.conf
+    
 fi
 
 log "Installing telnet auto-login helper $AUTOLOGIN …"
@@ -221,7 +225,7 @@ install -m 0755 "$FILES_DIR/l2-autologin" "$AUTOLOGIN"
 # which `login -f l2`'s straight into the L2 console. Idempotent —
 # only edits the line if -E isn't already present.
 log "Wiring telnetd -E $AUTOLOGIN in /etc/inetd.conf …"
-sed -i -E "/^telnet[[:space:]]/ { /-E[[:space:]]/!s|\$| -E ${AUTOLOGIN}| }" /etc/inetd.conf
+sed -i -E "/^telnet[[:space:]]/ { /-E[[:space:]]/!s|\$| -h -E ${AUTOLOGIN}| }" /etc/inetd.conf
 
 log "Enabling openbsd-inetd (for telnet)…"
 systemctl enable openbsd-inetd
