@@ -40,7 +40,7 @@ At least for an Altix 350, the Vendor/Device is `065e:1234`
 ### Docker on VM or Bare Metal
 You will use the `sgil1_driver` and `docker` directories.
 
-See [Docker readme](https://github.com/nsafran1217/SGI-L2-Docker/blob/main/docker/README.md) for more information. This includes information about troubleshooting, and service management.
+See [Docker readme](https://github.com/nsafran1217/SGI-L2-Docker/blob/main/docker/README.md) for more information. 
 
 Clone repo: 
 ```
@@ -59,6 +59,7 @@ Setup the docker container:
 
 ```
 cd ../docker
+cp ../snxsc_l3.tar.gz .
 docker compose build
 docker compose up -d
 ```
@@ -67,7 +68,7 @@ docker compose up -d
 You will use the `sgil1_driver` and `bare_metal_services` directories.  
 *the service setup script has only been tested on Debian 13. It will not work on non-debian based distros*
 
-See [bare metal readme](https://github.com/nsafran1217/SGI-L2-Docker/blob/main/bare_metal_services/README.md) for more information.
+See [bare metal readme](https://github.com/nsafran1217/SGI-L2-Docker/blob/main/bare_metal_services/README.md) for more information. This includes information about troubleshooting, service management, and removing the driver or services.
 
 Clone repo: 
 ```
