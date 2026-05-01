@@ -58,7 +58,9 @@ RUN chmod 0755 /usr/local/bin/l2term \
 # helper, invoked from in.telnetd via the -E flag) bypasses authentication,
 # so a usable password isn't needed.
 RUN useradd --create-home --home-dir /home/l2 \
-            --shell /usr/local/bin/l2term l2
+            --shell /usr/local/bin/l2term l2 \
+ && touch /home/l2/.hushlogin \
+ && chown l2:l2 /home/l2/.hushlogin
 
 # Wire the telnet line in /etc/inetd.conf:
 #   - Enable it (Debian's inetutils-telnetd registers it #<off># by default).
@@ -67,7 +69,7 @@ RUN useradd --create-home --home-dir /home/l2 \
 #     into the l2 user with no prompt.
 RUN update-inetd --enable telnet 2>/dev/null || true \
  && sed -i -E 's/^[[:space:]]+(telnet[[:space:]])/\1/' /etc/inetd.conf \
- && sed -i -E '/^telnet[[:space:]]/ { /-E[[:space:]]/!s|$| -E /usr/local/sbin/l2-autologin| }' /etc/inetd.conf
+ && sed -i -E '/^telnet[[:space:]]/ { /-E[[:space:]]/!s|$| -h -E /usr/local/sbin/l2-autologin| }' /etc/inetd.conf
 
 # Entrypoint: launches inetd (foreground) + the l2 daemon under the l2 user.
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
