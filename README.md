@@ -35,6 +35,9 @@ If you are running in a VM, either docker or the bare metal service, you must pa
 In proxmox, Passthrough the USB device by Vendor/Device ID.  
 At least for an Altix 350, the Vendor/Device is `065e:1234`
 
+If you plan to connect to a router, you will need to pass through all the devices since the router acts as a 
+USB hub. I installed a PCI-E usb card and passed the entire PCI device to my docker VM
+
 
 
 ### Docker on VM or Bare Metal
